@@ -15,7 +15,7 @@ const pulse = keyframes`
 
 const Section = styled.section`
   padding: 7rem 5rem;
-  background: #080F22;
+  background: rgb(255, 255, 255);
   text-align: center; position: relative; overflow: hidden;
   &::before {
     content: '';
@@ -32,7 +32,7 @@ const Section = styled.section`
 
 const Title = styled.h2<{ $visible?: boolean }>`
   font-family: var(--font-cabourg-bold), sans-serif;
-  font-size: clamp(2rem, 6vw, 4.5rem); font-weight: 800; color: #F4F6FA;
+  font-size: clamp(2rem, 6vw, 4.5rem); font-weight: 800; color: #2b2b2b;
   letter-spacing: 1px; position: relative; z-index: 1;
   opacity: 0;
   span { color: #EE961A; }

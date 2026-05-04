@@ -209,6 +209,7 @@ const CloseBtn = styled.button`
 `
 
 const navItems = [
+  { href: '#about',      label: 'Sobre Nós' },
   { href: '#servicos',      label: 'Serviços' },
   { href: '#como-funciona', label: 'Como Funciona' },
   { href: '#numeros',       label: 'Números' },

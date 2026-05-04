@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react'
 import styled, { keyframes, css } from 'styled-components'
 import { Card, CardTitle, CardText } from '../ui/Card'
 import SectionTitle from '../ui/SectionTitle'
-import { Truck, Package, Navigation, Layers, LayoutDashboard, Handshake } from 'lucide-react'
+import { Truck, CalendarCheck, Lock, Target, LayoutDashboard, MapPin } from 'lucide-react'
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(36px); }
@@ -59,6 +59,37 @@ const AnimCard = styled.div<{ $visible: boolean; $delay: number }>`
     `}
 `
 
+/* Card com hover laranja, texto branco/cinza claro,
+   border-radius: top-left e bottom-right = 0 (quadrado),
+   top-right e bottom-left = arredondados.
+   Hover: sobe (translateY) + fundo laranja */
+const HoverCard = styled.div`
+  background: #dfdfdf;
+  border-radius: 0 1.5rem 0 1.5rem; /* top-left=0, top-right=1.5rem, bottom-right=0, bottom-left=1.5rem */
+  padding: 2rem 1.75rem;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.28s ease,
+              box-shadow 0.28s ease;
+  cursor: pointer;
+  height: 100%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+
+  /* ícone, título e texto ficam com cores padrão */
+  .card-icon   { color: #ee961a; transition: color 0.28s ease; }
+  .card-title  { color: #1E549E; transition: color 0.28s ease; }
+  .card-text   { color: #4b5563; transition: color 0.28s ease; }
+
+  &:hover {
+    transform: translateY(-10px);
+    background: #ee961a;
+    box-shadow: 0 16px 40px rgba(238,150,26,0.35);
+
+    .card-icon  { color: #ffffff; }
+    .card-title { color: #ffffff; }
+    .card-text  { color: #f5f0e8; }
+  }
+`
+
 const IconWrap = styled.div`
   width: 48px;
   height: 48px;
@@ -66,29 +97,41 @@ const IconWrap = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 1.2rem;
-  color: #ee961a;
+`
+
+const StyledCardTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  line-height: 1.3;
+`
+
+const StyledCardText = styled.p`
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
 `
 
 const services = [
   {
     icon: <Truck size={28} strokeWidth={1.5} />,
-    title: 'Transporte Rodoviário',
-    text: 'Frota própria e rastreada para cargas de todos os tamanhos, cobrindo todo o território nacional com pontualidade.',
+    title: 'Carga Expressa',
+    text: 'Entregas urgentes com prioridade total no manuseio e transporte.',
   },
   {
-    icon: <Package size={28} strokeWidth={1.5} />,
-    title: 'Coleta e Distribuição',
-    text: 'Planejamento logístico completo da coleta até a entrega final, com visibilidade em tempo real da sua carga.',
+    icon: <CalendarCheck size={28} strokeWidth={1.5} />,
+    title: 'Coletas e entregas programadas',
+    text: 'Flexibilidade e previsibilidade para sua operação.',
   },
   {
-    icon: <Navigation size={28} strokeWidth={1.5} />,
-    title: 'Last Mile',
-    text: 'Entrega no último trecho com agilidade e cuidado, ideal para e-commerce e marketplaces como Mercado Livre e Shopee.',
+    icon: <Lock size={28} strokeWidth={1.5} />,
+    title: 'Transporte dedicado',
+    text: 'Veículos exclusivos para operações que exigem sigilo, controle e pontualidade.',
   },
   {
-    icon: <Layers size={28} strokeWidth={1.5} />,
-    title: 'Carga Fracionada',
-    text: 'Compartilhe o espaço do caminhão e reduza custos sem abrir mão do prazo e da segurança.',
+    icon: <Target size={28} strokeWidth={1.5} />,
+    title: 'Logística personalizada',
+    text: 'Flexibilidade e previsibilidade para sua operação.',
   },
   {
     icon: <LayoutDashboard size={28} strokeWidth={1.5} />,
@@ -96,9 +139,9 @@ const services = [
     text: 'Dashboard completo com rastreamento, relatórios e histórico de entregas para gestão eficiente da sua operação.',
   },
   {
-    icon: <Handshake size={28} strokeWidth={1.5} />,
-    title: 'Seja Parceiro',
-    text: 'Possui van, utilitário ou caminhão? Faça parte da nossa frota e aumente sua renda com rotas garantidas.',
+    icon: <MapPin size={28} strokeWidth={1.5} />,
+    title: 'Distribuição urbana',
+    text: 'Roteirização inteligente para maior produtividade dentro das cidades, respeitando restrições de circulação.',
   },
 ]
 
@@ -147,11 +190,11 @@ export default function Services() {
         <Grid ref={gridReveal.ref} $visible={gridReveal.visible}>
           {services.map((s, i) => (
             <AnimCard key={s.title} $visible={gridReveal.visible} $delay={i * 0.1}>
-              <Card $hoverable>
-                <IconWrap>{s.icon}</IconWrap>
-                <CardTitle>{s.title}</CardTitle>
-                <CardText>{s.text}</CardText>
-              </Card>
+              <HoverCard>
+                <IconWrap className="card-icon">{s.icon}</IconWrap>
+                <StyledCardTitle className="card-title">{s.title}</StyledCardTitle>
+                <StyledCardText className="card-text">{s.text}</StyledCardText>
+              </HoverCard>
             </AnimCard>
           ))}
         </Grid>

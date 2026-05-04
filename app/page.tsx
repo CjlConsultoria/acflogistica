@@ -7,6 +7,7 @@ import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners'
 import CTA from '@/components/sections/CTA'
 import WhatsAppFloat from '@/components/ui/WhatsAppFloat'
+import About from '@/components/sections/About'
 
 export default function Home() {
   return (
@@ -14,9 +15,10 @@ export default function Home() {
       <Header />
       <Hero />
       <Services />
+      <About />
+      <Partners />
       <HowItWorks />
       <Stats />
-      <Partners />
       <CTA />
       <Footer />
       <WhatsAppFloat />

@@ -1,7 +1,7 @@
 'use client'
 import styled, { keyframes, css } from 'styled-components'
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Truck, Phone, CheckCircle, Send, Loader, Car } from 'lucide-react'
+import { ChevronDown, Truck, Phone, CheckCircle, Send, Loader, Star, TrendingUp, Shield, Clock, Users, Zap, FileText } from 'lucide-react'
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -16,6 +16,11 @@ const pulse = keyframes`
 const spin = keyframes`
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+`
+
+const shimmer = keyframes`
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
 `
 
 const Section = styled.section`
@@ -41,151 +46,252 @@ const Inner = styled.div`
   box-sizing: border-box;
 `
 
+// ─── BANNER (fundo branco) ────────────────────────────────────
 const Banner = styled.div<{ $open: boolean }>`
   background: #ffffff;
-  border: 1px solid rgba(30,84,158,0.3);
-  border-radius: ${({ $open }) => $open ? '16px 16px 0 0' : '16px'};
-  padding: 2rem 2.5rem;
-  position: relative;
+  border: 1.5px solid rgba(30,84,158,0.18);
+  border-radius: ${({ $open }) => $open ? '20px 20px 0 0' : '20px'};
   overflow: hidden;
   transition: border-radius 0.3s ease;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.07);
   box-sizing: border-box;
   width: 100%;
+`
+
+// Hero strip no topo do banner
+const BannerHero = styled.div`
+  background: linear-gradient(135deg, #0E1829 0%, #1a2d4f 60%, #0E1829 100%);
+  padding: 2.2rem 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+
   &::before {
     content: '';
     position: absolute;
-    top: -40%; right: -10%;
+    top: -80px; right: -80px;
     width: 300px; height: 300px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(238,150,26,0.07) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(238,150,26,0.13) 0%, transparent 65%);
     pointer-events: none;
   }
-  @media (max-width: 768px) { padding: 1.5rem 1.25rem; }
-`
-
-const BannerTop = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  @media (max-width: 600px) {
-    flex-direction: column;
-    gap: 1.2rem;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(30,84,158,0.2) 0%, transparent 65%);
+    pointer-events: none;
   }
+
+  @media (max-width: 768px) { padding: 1.8rem 1.5rem 1.5rem; }
 `
 
-const BannerLeft = styled.div`
-  flex: 1;
-  min-width: 0;
-`
-
-const BannerTag = styled.span`
+const HeroBadge = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   font-family: var(--font-cabourg-bold), sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: #1E549E;
-  border: 1px solid rgba(30,84,158,0.4);
+  color: #EE961A;
+  border: 1px solid rgba(238,150,26,0.4);
+  background: rgba(238,150,26,0.08);
   padding: 0.3rem 0.9rem;
   border-radius: 999px;
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem;
 `
 
-const BannerTitle = styled.h2`
+const HeroTitle = styled.h2`
   font-family: var(--font-cabourg-bold), sans-serif;
-  font-size: clamp(1.2rem, 3vw, 2.1rem);
-  font-weight: 800;
+  font-size: clamp(1.5rem, 3.5vw, 2.3rem);
+  font-weight: 900;
   line-height: 1.1;
-  color: #111827;
-  margin-bottom: 0.4rem;
-  span { color: #EE961A; }
-`
+  color: #EDF1FA;
+  margin-bottom: 0.7rem;
 
-const BannerSub = styled.p`
-  font-size: 0.82rem;
-  color: #6B7A99;
-  line-height: 1.6;
-  margin-top: 0.6rem;
-`
-
-const BannerRight = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 160px;
-  flex-shrink: 0;
-  @media (max-width: 600px) {
-    flex-direction: row;
-    flex-wrap: wrap;
-    min-width: 0;
-    width: 100%;
+  span {
+    background: linear-gradient(90deg, #EE961A, #f5c842, #EE961A);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: ${shimmer} 3s linear infinite;
   }
 `
 
-const ValueCard = styled.div<{ $highlight?: boolean }>`
-  background: ${({ $highlight }) => $highlight ? 'rgba(238,150,26,0.09)' : 'rgba(0,0,0,0.03)'};
-  border: 1px solid ${({ $highlight }) => $highlight ? 'rgba(238,150,26,0.35)' : 'rgba(0,0,0,0.08)'};
-  border-radius: 999px;
-  padding: 0.7rem 1rem;
-  p { font-size: 0.65rem; color: #9CA3AF; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.15rem; }
-  strong { font-family: var(--font-cabourg-bold), sans-serif; font-size: 1.25rem; font-weight: 800; color: ${({ $highlight }) => $highlight ? '#EE961A' : '#111827'}; }
-  span { font-size: 0.7rem; color: #9CA3AF; margin-left: 0.3rem; }
-  @media (max-width: 600px) { flex: 1; min-width: 140px; }
+const HeroSub = styled.p`
+  font-size: 0.88rem;
+  color: #8A97B4;
+  line-height: 1.7;
+  max-width: 500px;
 `
 
-const ExtraRow = styled.div`
+// ─── Corpo do banner (fundo branco) ──────────────────────────
+const BannerBody = styled.div`
+  padding: 2rem 2.5rem;
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1.6rem;
+  @media (max-width: 768px) { padding: 1.5rem 1.25rem; }
 `
 
-const ExtraChip = styled.div`
-  background: rgba(0,0,0,0.03);
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 999px;
-  padding: 0.35rem 0.7rem;
+// Bloco de benefícios
+const BlockTitle = styled.h3`
+  font-family: var(--font-cabourg-bold), sans-serif;
   font-size: 0.7rem;
-  color: #6B7A99;
-  strong { color: #EE961A; font-weight: 700; }
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #1E549E;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(30,84,158,0.12);
+    border-radius: 2px;
+  }
 `
 
-const BannerDivider = styled.div`
-  height: 1px;
-  background: rgba(0,0,0,0.07);
-  margin: 1.4rem 0;
-`
-
-const PerksGrid = styled.div`
+const BenefitsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  @media (max-width: 600px) { grid-template-columns: 1fr; }
+  gap: 0.7rem;
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
 `
 
-const Perk = styled.div`
+const BenefitCard = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: rgba(30,84,158,0.03);
+  border: 1px solid rgba(30,84,158,0.10);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  transition: all 0.22s ease;
+
+  &:hover {
+    border-color: rgba(238,150,26,0.35);
+    background: rgba(238,150,26,0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(238,150,26,0.08);
+  }
+`
+
+const BenefitIcon = styled.div`
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(238,150,26,0.10);
+  border: 1px solid rgba(238,150,26,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #EE961A;
+`
+
+const BenefitText = styled.div`
+  p {
+    font-family: var(--font-cabourg-bold), sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+    margin-bottom: 0.15rem;
+  }
+  span {
+    font-size: 0.72rem;
+    color: #6B7A99;
+    line-height: 1.4;
+  }
+`
+
+// Bloco de diferenciais (lista)
+const DiffList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+
+const DiffItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: #374151;
+  font-weight: 500;
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #EE961A;
+    flex-shrink: 0;
+  }
+`
+
+// Bloco de requisitos
+const ReqGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.55rem;
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+`
+
+const ReqChip = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.78rem;
-  color: #4B5563;
-  svg { color: #EE961A; flex-shrink: 0; }
+  background: rgba(30,84,158,0.04);
+  border: 1px solid rgba(30,84,158,0.12);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.76rem;
+  color: #374151;
+  font-weight: 500;
+  svg { color: #1E549E; flex-shrink: 0; }
 `
 
-const BannerFooter = styled.div`
-  margin-top: 1.8rem;
+// CTA strip
+const CtaStrip = styled.div`
+  background: linear-gradient(135deg, rgba(238,150,26,0.07) 0%, rgba(238,150,26,0.03) 100%);
+  border: 1.5px solid rgba(238,150,26,0.25);
+  border-radius: 14px;
+  padding: 1.2rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   flex-wrap: wrap;
-  gap: 0.8rem;
+
   @media (max-width: 520px) {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.8rem;
+    padding: 1.2rem 1.2rem;
+  }
+`
+
+const CtaLeft = styled.div`
+  p {
+    font-family: var(--font-cabourg-bold), sans-serif;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 0.15rem;
+  }
+  span {
+    font-size: 0.75rem;
+    color: #6B7A99;
   }
 `
 
@@ -194,14 +300,18 @@ const PhoneDisplay = styled.a`
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-cabourg-bold), sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: #EE961A;
+  color: #207AB9;
   letter-spacing: 1px;
   transition: color 0.2s;
-  svg { color: #EE961A; }
-  &:hover { color: #f5a832; }
-  @media (max-width: 520px) { justify-content: center; }
+  svg { color: #207AB9; }
+  &:hover { color: #1f72ad; }
+
+  @media (max-width: 520px) {
+    justify-content: center;
+    font-size: 1rem;
+  }
 `
 
 const OpenBtn = styled.button<{ $open: boolean }>`
@@ -223,14 +333,21 @@ const OpenBtn = styled.button<{ $open: boolean }>`
   transition: all 0.25s ease;
   animation: ${pulse} 2.5s ease-in-out infinite;
   white-space: nowrap;
-  width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
+  margin-left: auto;
   &:hover { background: #f5a832; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(238,150,26,0.4); animation: none; }
   svg { transition: transform 0.35s ease; transform: ${({ $open }) => $open ? 'rotate(180deg)' : 'rotate(0deg)'}; flex-shrink: 0; }
-  @media (min-width: 521px) { width: auto; }
+
+  @media (max-width: 520px) {
+    width: 100%;
+    margin-left: 0;
+    padding: 0.85rem 1.2rem;
+    font-size: 0.82rem;
+    letter-spacing: 1.5px;
+  }
 `
 
+// ─── Formulário (100% intacto) ────────────────────────────────
 const FormWrapper = styled.div<{ $open: boolean }>`
   opacity: ${({ $open }) => $open ? '1' : '0'};
   transform: ${({ $open }) => $open ? 'translateY(0)' : 'translateY(-12px)'};
@@ -246,7 +363,7 @@ const FormInner = styled.div`
   background: #ffffff;
   border: 1px solid rgba(30,84,158,0.25);
   border-top: none;
-  border-radius: 0 0 16px 16px;
+  border-radius: 0 0 20px 20px;
   padding: 2rem 2.5rem;
   overflow: visible;
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
@@ -486,13 +603,28 @@ const SpinnerIcon = styled(Loader)`
   animation: ${spin} 1s linear infinite;
 `
 
-const perks = [
-  'Sem fila de espera',
-  'Rota inteligente via App',
-  'Atuação em Guarulhos, Zona Norte e Leste',
-  'Carregamento rápido (média 15 min)',
-  '4 ciclos de horários de carregamento',
-  'Pagamento semanal garantido',
+// ─── Dados ────────────────────────────────────────────────────
+const benefits = [
+  { icon: <TrendingUp size={16} strokeWidth={1.8} />, title: 'Alta demanda diária', desc: 'Volume constante de entregas todos os dias' },
+  { icon: <Clock size={16} strokeWidth={1.8} />, title: 'Ganhos previsíveis', desc: 'Pagamento quinzenal, organizado e sem atraso' },
+  { icon: <Zap size={16} strokeWidth={1.8} />, title: 'Rotas otimizadas', desc: 'Roteiros inteligentes para você produzir mais' },
+  { icon: <Shield size={16} strokeWidth={1.8} />, title: 'Suporte dedicado', desc: 'Apoio durante toda a operação' },
+  { icon: <Users size={16} strokeWidth={1.8} />, title: 'Grandes parceiros', desc: 'Operação integrada com o e-commerce nacional' },
+  { icon: <Star size={16} strokeWidth={1.8} />, title: 'Empresa em expansão', desc: 'Cresça junto com uma operação estruturada' },
+]
+
+const diferenciais = [
+  'Saia da instabilidade dos aplicativos',
+  'Tenha previsibilidade de ganhos reais',
+  'Trabalhe com demanda garantida todos os dias',
+  'Faça parte de uma empresa em crescimento contínuo',
+]
+
+const requisitos = [
+  { icon: <FileText size={13} strokeWidth={2} />, label: 'CNH categoria B com EAR' },
+  { icon: <Truck size={13} strokeWidth={2} />, label: 'Veículo próprio (van, utilitário ou passeio)' },
+  { icon: <CheckCircle size={13} strokeWidth={2} />, label: 'MEI ativo ou disponível para abrir' },
+  { icon: <Star size={13} strokeWidth={2} />, label: 'Comprometimento com prazo e qualidade' },
 ]
 
 // Google Forms entry IDs
@@ -662,7 +794,6 @@ export default function Partners() {
     formData.append(ENTRIES.veiculoTipo, veiculoTipo)
 
     try {
-      // Google Forms doesn't allow CORS — use no-cors mode; response will be opaque but data is saved
       await fetch(FORM_ACTION, {
         method: 'POST',
         mode: 'no-cors',
@@ -672,7 +803,6 @@ export default function Partners() {
       // no-cors throws no real error; any network failure is silent
     }
 
-    // Assume success after POST (Google Forms no-cors always "succeeds" silently)
     setStatus('success')
   }
 
@@ -682,49 +812,80 @@ export default function Partners() {
     <Section id="parceiros">
       <Inner>
         <Banner $open={open}>
-          <BannerTop>
-            <BannerLeft>
-              <BannerTag><Truck size={11} strokeWidth={2} />Vagas Abertas — Guarulhos e Região</BannerTag>
-              <BannerTitle>
-                QUER FATURAR ATÉ<br />
-                <span>R$ 8.500,00</span> POR MÊS<br />
-                COM SEU UTILITÁRIO?
-              </BannerTitle>
-              <BannerSub>Van, Fiorino, Kangoo, Doblo ou similares · Carro de passeio a partir de 2011 · CNH com EAR · PJ-MEI</BannerSub>
-            </BannerLeft>
-            <BannerRight>
-              <ValueCard $highlight>
-                <p>Seg–Sáb</p>
-                <strong>R$ 420<span>/dia</span></strong>
-              </ValueCard>
-              <ValueCard>
-                <p>Dom e Feriados</p>
-                <strong>R$ 630<span>/dia</span></strong>
-              </ValueCard>
-              <ExtraRow>
-                <ExtraChip>+ <strong>R$ 0,60</strong>/km rod.</ExtraChip>
-                <ExtraChip>+ <strong>R$ 0,10</strong>/pacote</ExtraChip>
-              </ExtraRow>
-            </BannerRight>
-          </BannerTop>
-          <BannerDivider />
-          <PerksGrid>
-            {perks.map((p) => (
-              <Perk key={p}><CheckCircle size={14} strokeWidth={2} />{p}</Perk>
-            ))}
-          </PerksGrid>
-          <BannerFooter>
-            <PhoneDisplay href="tel:+5511978166315">
-              <Phone size={18} strokeWidth={1.5} />
-              (11) 97816-6315
-            </PhoneDisplay>
-            <OpenBtn $open={open} onClick={() => setOpen(!open)}>
-              {open ? 'Fechar Formulário' : 'Quero Me Cadastrar'}
-              <ChevronDown size={18} strokeWidth={2.5} />
-            </OpenBtn>
-          </BannerFooter>
+
+          {/* ── Hero strip escuro no topo ── */}
+          <BannerHero>
+            <HeroBadge><Truck size={11} strokeWidth={2} /> Vagas Abertas — Guarulhos e Região</HeroBadge>
+            <HeroTitle>
+              Seja Motorista <span>Parceiro</span><br />
+              da ACF Logística
+            </HeroTitle>
+            <HeroSub>
+              Quer trabalhar com entregas e ter ganhos consistentes todos os meses?
+              Conectamos você às grandes operações do e-commerce brasileiro —
+              com demanda constante e oportunidades reais de crescimento.
+            </HeroSub>
+          </BannerHero>
+
+          {/* ── Corpo branco com informações ── */}
+          <BannerBody>
+
+            {/* Benefícios */}
+            <div>
+              <BlockTitle><TrendingUp size={13} strokeWidth={2.5} /> Por que trabalhar com a ACF?</BlockTitle>
+              <BenefitsGrid>
+                {benefits.map((b) => (
+                  <BenefitCard key={b.title}>
+                    <BenefitIcon>{b.icon}</BenefitIcon>
+                    <BenefitText>
+                      <p>{b.title}</p>
+                      <span>{b.desc}</span>
+                    </BenefitText>
+                  </BenefitCard>
+                ))}
+              </BenefitsGrid>
+            </div>
+
+            {/* Diferenciais */}
+            <div>
+              <BlockTitle><Zap size={13} strokeWidth={2.5} /> Mais entregas, mais ganhos</BlockTitle>
+              <DiffList>
+                {diferenciais.map((d) => (
+                  <DiffItem key={d}>{d}</DiffItem>
+                ))}
+              </DiffList>
+            </div>
+
+            {/* Requisitos */}
+            <div>
+              <BlockTitle><FileText size={13} strokeWidth={2.5} /> Requisitos para começar</BlockTitle>
+              <ReqGrid>
+                {requisitos.map((r) => (
+                  <ReqChip key={r.label}>{r.icon}{r.label}</ReqChip>
+                ))}
+              </ReqGrid>
+            </div>
+
+            {/* CTA strip — número fixo à esquerda, botão no canto direito */}
+            <CtaStrip>
+              <CtaLeft>
+                <p>Cadastro rápido e 100% gratuito</p>
+                <span>Processo simples · Comece o quanto antes</span>
+              </CtaLeft>
+              <PhoneDisplay href="tel:+5511978166315">
+                <Phone size={16} strokeWidth={1.5} />
+                (11) 97816-6315
+              </PhoneDisplay>
+              <OpenBtn $open={open} onClick={() => setOpen(!open)}>
+                {open ? 'Fechar Formulário' : 'Garantir minha vaga'}
+                <ChevronDown size={18} strokeWidth={2.5} />
+              </OpenBtn>
+            </CtaStrip>
+
+          </BannerBody>
         </Banner>
 
+        {/* ── Formulário 100% intacto ── */}
         <FormWrapper $open={open}>
           <FormInner>
             {status === 'success' ? (
@@ -742,7 +903,6 @@ export default function Partners() {
                 <FormSub>Todos os campos são obrigatórios. Entraremos em contato em até 24h úteis.</FormSub>
                 <Grid>
 
-                  {/* Nome */}
                   <Field>
                     <FieldLabel>Nome completo *</FieldLabel>
                     <Input
@@ -755,7 +915,6 @@ export default function Partners() {
                     {err('nome') && <FieldError>{err('nome')}</FieldError>}
                   </Field>
 
-                  {/* CPF */}
                   <Field>
                     <FieldLabel>CPF *</FieldLabel>
                     <Input
@@ -768,7 +927,6 @@ export default function Partners() {
                     {err('cpf') && <FieldError>{err('cpf')}</FieldError>}
                   </Field>
 
-                  {/* Telefone */}
                   <Field>
                     <FieldLabel>Telefone / WhatsApp *</FieldLabel>
                     <Input
@@ -782,7 +940,6 @@ export default function Partners() {
                     {err('telefone') && <FieldError>{err('telefone')}</FieldError>}
                   </Field>
 
-                  {/* Endereço */}
                   <Field>
                     <FieldLabel>Endereço *</FieldLabel>
                     <Input
@@ -795,7 +952,6 @@ export default function Partners() {
                     {err('endereco') && <FieldError>{err('endereco')}</FieldError>}
                   </Field>
 
-                  {/* CEP */}
                   <Field>
                     <FieldLabel>CEP *</FieldLabel>
                     <Input
@@ -809,7 +965,6 @@ export default function Partners() {
                     {err('cep') && <FieldError>{err('cep')}</FieldError>}
                   </Field>
 
-                  {/* Cidade */}
                   <Field>
                     <FieldLabel>Cidade *</FieldLabel>
                     <Input
@@ -822,7 +977,6 @@ export default function Partners() {
                     {err('cidade') && <FieldError>{err('cidade')}</FieldError>}
                   </Field>
 
-                  {/* Estado */}
                   <Field>
                     <FieldLabel>Estado *</FieldLabel>
                     <CustomSelect
@@ -835,7 +989,6 @@ export default function Partners() {
                     {err('estado') && <FieldError>{err('estado')}</FieldError>}
                   </Field>
 
-                  {/* E-mail */}
                   <Field>
                     <FieldLabel>E-mail *</FieldLabel>
                     <Input
@@ -849,7 +1002,6 @@ export default function Partners() {
                     {err('email') && <FieldError>{err('email')}</FieldError>}
                   </Field>
 
-                  {/* Nome da Empresa */}
                   <Field>
                     <FieldLabel>Nome da sua Empresa *</FieldLabel>
                     <Input
@@ -861,7 +1013,6 @@ export default function Partners() {
                     {err('empresa') && <FieldError>{err('empresa')}</FieldError>}
                   </Field>
 
-                  {/* CNPJ */}
                   <Field>
                     <FieldLabel>CNPJ *</FieldLabel>
                     <Input
@@ -874,7 +1025,6 @@ export default function Partners() {
                     {err('cnpj') && <FieldError>{err('cnpj')}</FieldError>}
                   </Field>
 
-                  {/* Banco */}
                   <Field>
                     <FieldLabel>Banco *</FieldLabel>
                     <Input
@@ -886,7 +1036,6 @@ export default function Partners() {
                     {err('banco') && <FieldError>{err('banco')}</FieldError>}
                   </Field>
 
-                  {/* Agência */}
                   <Field>
                     <FieldLabel>Número da Agência *</FieldLabel>
                     <Input
@@ -899,7 +1048,6 @@ export default function Partners() {
                     {err('agencia') && <FieldError>{err('agencia')}</FieldError>}
                   </Field>
 
-                  {/* Conta Corrente */}
                   <Field>
                     <FieldLabel>Número Conta Corrente *</FieldLabel>
                     <Input
@@ -912,7 +1060,6 @@ export default function Partners() {
                     {err('conta') && <FieldError>{err('conta')}</FieldError>}
                   </Field>
 
-                  {/* Pix */}
                   <Field>
                     <FieldLabel>Chave Pix *</FieldLabel>
                     <Input
@@ -924,7 +1071,6 @@ export default function Partners() {
                     {err('pix') && <FieldError>{err('pix')}</FieldError>}
                   </Field>
 
-                  {/* Tipo de Conta */}
                   <Field>
                     <FieldLabel>Tipo de Conta *</FieldLabel>
                     <RadioGroup>
@@ -943,7 +1089,6 @@ export default function Partners() {
                     {err('tipoConta') && <FieldError>{err('tipoConta')}</FieldError>}
                   </Field>
 
-                  {/* Veículo Tipo */}
                   <Field>
                     <FieldLabel>Veículo Tipo *</FieldLabel>
                     <Input
@@ -955,7 +1100,6 @@ export default function Partners() {
                     {err('veiculoTipo') && <FieldError>{err('veiculoTipo')}</FieldError>}
                   </Field>
 
-                  {/* Nota sobre documentos */}
                   <NoteBox>
                     <strong>Documentos necessários:</strong> Após enviar o cadastro, encaminhe cópia da <strong>CNH, Comprovante de endereço, Cartão CNPJ e CRLV do Veículo</strong> para o WhatsApp <strong>(11) 97816-6315</strong>.
                   </NoteBox>
