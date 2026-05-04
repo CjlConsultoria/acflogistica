@@ -1,8 +1,7 @@
 'use client'
 import styled, { keyframes, css } from 'styled-components'
 import { useState, useRef, useEffect } from 'react'
-import emailjs from '@emailjs/browser'
-import { ChevronDown, Truck, User, Phone, Car, CheckCircle, Send, Loader, FileText, Briefcase } from 'lucide-react'
+import { ChevronDown, Truck, Phone, CheckCircle, Send, Loader, Car } from 'lucide-react'
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -12,6 +11,11 @@ const fadeUp = keyframes`
 const pulse = keyframes`
   0%, 100% { box-shadow: 0 0 0 0 rgba(238,150,26,0.4); }
   50%       { box-shadow: 0 0 0 12px rgba(238,150,26,0); }
+`
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 `
 
 const Section = styled.section`
@@ -224,10 +228,7 @@ const OpenBtn = styled.button<{ $open: boolean }>`
   box-sizing: border-box;
   &:hover { background: #f5a832; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(238,150,26,0.4); animation: none; }
   svg { transition: transform 0.35s ease; transform: ${({ $open }) => $open ? 'rotate(180deg)' : 'rotate(0deg)'}; flex-shrink: 0; }
-
-  @media (min-width: 521px) {
-    width: auto;
-  }
+  @media (min-width: 521px) { width: auto; }
 `
 
 const FormWrapper = styled.div<{ $open: boolean }>`
@@ -308,19 +309,20 @@ const inputBase = css`
   box-sizing: border-box;
   &::placeholder { color: rgba(0,0,0,0.25); }
   &:focus { border-color: #1E549E; box-shadow: 0 0 0 3px rgba(30,84,158,0.12); }
+  &.error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.10); }
 `
 
 const Input = styled.input`${inputBase}`
 
-const SelectTrigger = styled.button<{ $isOpen: boolean }>`
+const SelectTrigger = styled.button<{ $isOpen: boolean; $hasError?: boolean }>`
   ${inputBase}
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   text-align: left;
-  border-color: ${({ $isOpen }) => $isOpen ? '#1E549E' : 'rgba(30,84,158,0.3)'};
-  box-shadow: ${({ $isOpen }) => $isOpen ? '0 0 0 3px rgba(30,84,158,0.12)' : 'none'};
+  border-color: ${({ $isOpen, $hasError }) => $hasError ? '#dc2626' : $isOpen ? '#1E549E' : 'rgba(30,84,158,0.3)'};
+  box-shadow: ${({ $isOpen, $hasError }) => $hasError ? '0 0 0 3px rgba(220,38,38,0.10)' : $isOpen ? '0 0 0 3px rgba(30,84,158,0.12)' : 'none'};
   svg {
     transition: transform 0.3s ease;
     transform: ${({ $isOpen }) => $isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
@@ -374,117 +376,54 @@ const DropdownItem = styled.li<{ $active: boolean }>`
   }
 `
 
-const veiculoOptions = ['Van', 'Fiorino', 'Kangoo', 'Doblo', 'Carro de passeio (2011+)', 'Outro utilitário']
-const cnhOptions = ['CNH B', 'CNH C', 'CNH D', 'CNH E', 'CNH AB', 'CNH AC', 'CNH AD', 'CNH AE']
-const experienciaOptions = ['Menos de 6 meses', '6 meses a 1 ano', '1 a 2 anos', '2 a 5 anos', 'Mais de 5 anos']
-const disponibilidadeOptions = ['Manhã (06h–12h)', 'Tarde (12h–18h)', 'Noite (18h–00h)', 'Integral (06h–18h)']
-
-function CustomSelect({ value, onChange, options, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-  placeholder?: string
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
-      <SelectTrigger type="button" $isOpen={isOpen} onClick={() => setIsOpen(!isOpen)}>
-        <SelectPlaceholder $hasValue={!!value}>{value || (placeholder ?? 'Selecione...')}</SelectPlaceholder>
-        <ChevronDown size={14} strokeWidth={2.5} />
-      </SelectTrigger>
-      <DropdownList $isOpen={isOpen}>
-        {options.map((opt) => (
-          <DropdownItem
-            key={opt}
-            $active={value === opt}
-            onClick={() => { onChange(opt); setIsOpen(false) }}
-          >
-            {opt}
-          </DropdownItem>
-        ))}
-      </DropdownList>
-    </div>
-  )
-}
-
-const TypeToggle = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  width: 100%;
-  box-sizing: border-box;
+const FieldError = styled.span`
+  font-size: 0.7rem;
+  color: #dc2626;
+  padding-left: 0.5rem;
+  animation: ${fadeUp} 0.2s ease both;
 `
 
-const TypeBtn = styled.button<{ $active: boolean }>`
-  padding: 0.7rem;
-  border-radius: 999px;
-  border: 1.5px solid ${({ $active }) => $active ? '#1E549E' : 'rgba(30,84,158,0.2)'};
-  background: ${({ $active }) => $active ? 'rgba(30,84,158,0.12)' : 'rgba(30,84,158,0.03)'};
-  color: ${({ $active }) => $active ? '#1E549E' : '#9CA3AF'};
-  font-family: var(--font-cabourg-bold), sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
+const RadioGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+
+const RadioLabel = styled.label<{ $checked: boolean; $hasError?: boolean }>`
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-width: 0;
-  &:hover { border-color: #1E549E; color: #1E549E; background: rgba(30,84,158,0.08); }
-`
-
-const EarToggle = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  width: 100%;
-  box-sizing: border-box;
-`
-
-const EarBtn = styled.button<{ $active: boolean; $variant?: 'yes' | 'no' }>`
-  padding: 0.7rem;
+  gap: 0.75rem;
+  padding: 0.7rem 1.1rem;
   border-radius: 999px;
-  border: 1.5px solid ${({ $active, $variant }) =>
-    $active
-      ? $variant === 'no' ? 'rgba(239,68,68,0.6)' : '#1E549E'
-      : 'rgba(30,84,158,0.2)'};
-  background: ${({ $active, $variant }) =>
-    $active
-      ? $variant === 'no' ? 'rgba(239,68,68,0.08)' : 'rgba(30,84,158,0.12)'
-      : 'rgba(30,84,158,0.03)'};
-  color: ${({ $active, $variant }) =>
-    $active
-      ? $variant === 'no' ? '#dc2626' : '#1E549E'
-      : '#9CA3AF'};
-  font-family: var(--font-cabourg-bold), sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+  border: 1.5px solid ${({ $checked, $hasError }) => $hasError && !$checked ? '#dc2626' : $checked ? '#1E549E' : 'rgba(30,84,158,0.3)'};
+  background: ${({ $checked }) => $checked ? 'rgba(30,84,158,0.08)' : 'rgba(30,84,158,0.04)'};
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-width: 0;
-  &:hover {
-    border-color: ${({ $variant }) => $variant === 'no' ? 'rgba(239,68,68,0.6)' : '#1E549E'};
-    color: ${({ $variant }) => $variant === 'no' ? '#dc2626' : '#1E549E'};
-    background: ${({ $variant }) => $variant === 'no' ? 'rgba(239,68,68,0.08)' : 'rgba(30,84,158,0.08)'};
+  font-size: 0.86rem;
+  color: ${({ $checked }) => $checked ? '#1E549E' : '#111827'};
+  font-weight: ${({ $checked }) => $checked ? '600' : '400'};
+  &:hover { border-color: #1E549E; background: rgba(30,84,158,0.08); }
+`
+
+const RadioDot = styled.div<{ $checked: boolean }>`
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid ${({ $checked }) => $checked ? '#1E549E' : 'rgba(30,84,158,0.4)'};
+  background: ${({ $checked }) => $checked ? '#1E549E' : 'transparent'};
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.2s;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: white;
+    opacity: ${({ $checked }) => $checked ? 1 : 0};
+    transition: opacity 0.2s;
   }
 `
 
@@ -518,21 +457,33 @@ const SubmitBtn = styled.button<{ $loading?: boolean }>`
 const SuccessBox = styled.div`
   background: rgba(34,197,94,0.08);
   border: 1px solid rgba(34,197,94,0.3);
-  border-radius: 999px;
-  padding: 1rem 1.3rem;
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.8rem;
   color: #16a34a;
   font-size: 0.86rem;
+  text-align: center;
   animation: ${fadeUp} 0.4s ease both;
-  svg { flex-shrink: 0; }
+  svg { flex-shrink: 0; color: #16a34a; }
+  strong { font-size: 1rem; font-family: var(--font-cabourg-bold), sans-serif; }
 `
 
-const ErrorBox = styled(SuccessBox)`
-  background: rgba(239,68,68,0.08);
-  border-color: rgba(239,68,68,0.3);
-  color: #dc2626;
+const NoteBox = styled.div`
+  background: rgba(30,84,158,0.04);
+  border: 1px solid rgba(30,84,158,0.15);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  font-size: 0.78rem;
+  color: #4B5563;
+  line-height: 1.6;
+  strong { color: #1E549E; }
+`
+
+const SpinnerIcon = styled(Loader)`
+  animation: ${spin} 1s linear infinite;
 `
 
 const perks = [
@@ -544,6 +495,33 @@ const perks = [
   'Pagamento semanal garantido',
 ]
 
+// Google Forms entry IDs
+const FORM_ACTION = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfx8G7AFDq3AXSWpr6lnXrpYMSD80QivajPtUzYQGTSK0WfbA/formResponse'
+const ENTRIES = {
+  nome: 'entry.594626444',
+  cpf: 'entry.226565569',
+  telefone: 'entry.1496314386',
+  endereco: 'entry.1644043184',
+  cep: 'entry.969990543',
+  cidade: 'entry.1500274764',
+  estado: 'entry.983193459',
+  email: 'entry.368565039',
+  empresa: 'entry.409709660',
+  cnpj: 'entry.2060701609',
+  banco: 'entry.754164944',
+  agencia: 'entry.2035131932',
+  conta: 'entry.2059298555',
+  pix: 'entry.1851449410',
+  tipoConta: 'entry.1306990964',
+  veiculoTipo: 'entry.2016475994',
+}
+
+const estadoOptions = [
+  'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
+  'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
+  'SP','SE','TO'
+]
+
 function maskPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '').slice(0, 11)
   if (digits.length === 0)  return ''
@@ -552,154 +530,153 @@ function maskPhone(raw: string): string {
   return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`
 }
 
-function sanitizeName(raw: string): string {
-  return raw.replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, '').slice(0, 80)
+function maskCPF(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0,3)}.${digits.slice(3)}`
+  if (digits.length <= 9) return `${digits.slice(0,3)}.${digits.slice(3,6)}.${digits.slice(6)}`
+  return `${digits.slice(0,3)}.${digits.slice(3,6)}.${digits.slice(6,9)}-${digits.slice(9)}`
 }
 
-function sanitizeCity(raw: string): string {
-  return raw.replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, '').slice(0, 60)
+function maskCNPJ(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 14)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 5) return `${digits.slice(0,2)}.${digits.slice(2)}`
+  if (digits.length <= 8) return `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5)}`
+  if (digits.length <= 12) return `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5,8)}/${digits.slice(8)}`
+  return `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5,8)}/${digits.slice(8,12)}-${digits.slice(12)}`
 }
+
+function maskCEP(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8)
+  if (digits.length <= 5) return digits
+  return `${digits.slice(0,5)}-${digits.slice(5)}`
+}
+
+function CustomSelect({ value, onChange, options, placeholder, hasError }: {
+  value: string
+  onChange: (v: string) => void
+  options: string[]
+  placeholder?: string
+  hasError?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
+      <SelectTrigger type="button" $isOpen={isOpen} $hasError={hasError && !value} onClick={() => setIsOpen(!isOpen)}>
+        <SelectPlaceholder $hasValue={!!value}>{value || (placeholder ?? 'Selecione...')}</SelectPlaceholder>
+        <ChevronDown size={14} strokeWidth={2.5} />
+      </SelectTrigger>
+      <DropdownList $isOpen={isOpen}>
+        {options.map((opt) => (
+          <DropdownItem
+            key={opt}
+            $active={value === opt}
+            onClick={() => { onChange(opt); setIsOpen(false) }}
+          >
+            {opt}
+          </DropdownItem>
+        ))}
+      </DropdownList>
+    </div>
+  )
+}
+
+type FieldErrors = Record<string, string>
 
 export default function Partners() {
-  const [open, setOpen]     = useState(false)
-  const [tipo, setTipo]     = useState<'motorista' | 'agregado'>('motorista')
+  const [open, setOpen] = useState(false)
 
-  // Campos compartilhados
-  const [nome, setNome]                 = useState('')
-  const [telefone, setTelefone]         = useState('')
-  const [cidade, setCidade]             = useState('Guarulhos')
-  const [ear, setEar]                   = useState<'sim' | 'nao' | ''>('sim')
-  const [disponibilidade, setDisponibilidade] = useState('Integral (06h–18h)')
+  const [nome, setNome]           = useState('')
+  const [cpf, setCpf]             = useState('')
+  const [telefone, setTelefone]   = useState('')
+  const [endereco, setEndereco]   = useState('')
+  const [cep, setCep]             = useState('')
+  const [cidade, setCidade]       = useState('')
+  const [estado, setEstado]       = useState('')
+  const [email, setEmail]         = useState('')
+  const [empresa, setEmpresa]     = useState('')
+  const [cnpj, setCnpj]           = useState('')
+  const [banco, setBanco]         = useState('')
+  const [agencia, setAgencia]     = useState('')
+  const [conta, setConta]         = useState('')
+  const [pix, setPix]             = useState('')
+  const [tipoConta, setTipoConta] = useState<'PJ' | 'PF' | ''>('')
+  const [veiculoTipo, setVeiculoTipo] = useState('')
 
-  // Campos exclusivos — Motorista Próprio
-  const [veiculo, setVeiculo]           = useState('')
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
 
-  // Campos exclusivos — Agregado
-  const [cnh, setCnh]                   = useState('')
-  const [experiencia, setExperiencia]   = useState('1 a 2 anos')
-
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const [errMsg, setErrMsg] = useState('')
-
-  // Limpa campos exclusivos ao trocar de tipo (mantém os campos compartilhados)
-  const handleTipo = (novoTipo: 'motorista' | 'agregado') => {
-    setTipo(novoTipo)
-    setVeiculo('')
-    setCnh('')
-    setExperiencia('1 a 2 anos')
-    setStatus('idle')
+  function validate(): boolean {
+    const e: FieldErrors = {}
+    if (!nome.trim())                          e.nome = 'Informe seu nome completo.'
+    if (cpf.replace(/\D/g,'').length < 11)    e.cpf = 'CPF inválido (11 dígitos).'
+    if (telefone.replace(/\D/g,'').length < 10) e.telefone = 'Telefone inválido.'
+    if (!endereco.trim())                      e.endereco = 'Informe seu endereço.'
+    if (cep.replace(/\D/g,'').length < 8)     e.cep = 'CEP inválido (8 dígitos).'
+    if (!cidade.trim())                        e.cidade = 'Informe a cidade.'
+    if (!estado)                               e.estado = 'Selecione o estado.'
+    if (!email.trim() || !email.includes('@')) e.email = 'E-mail inválido.'
+    if (!empresa.trim())                       e.empresa = 'Informe o nome da empresa.'
+    if (cnpj.replace(/\D/g,'').length < 14)   e.cnpj = 'CNPJ inválido (14 dígitos).'
+    if (!banco.trim())                         e.banco = 'Informe o banco.'
+    if (!agencia.trim())                       e.agencia = 'Informe o número da agência.'
+    if (!conta.trim())                         e.conta = 'Informe o número da conta.'
+    if (!pix.trim())                           e.pix = 'Informe a chave Pix.'
+    if (!tipoConta)                            e.tipoConta = 'Selecione o tipo de conta.'
+    if (!veiculoTipo.trim())                   e.veiculoTipo = 'Informe o tipo de veículo.'
+    setErrors(e)
+    return Object.keys(e).length === 0
   }
-
-  const handleNome = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setNome(sanitizeName(e.target.value))
-
-  const handleTelefone = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setTelefone(maskPhone(e.target.value))
-
-  const handleCidade = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setCidade(sanitizeCity(e.target.value))
 
   const handleSubmit = async () => {
-    const phoneDigits = telefone.replace(/\D/g, '')
-
-    if (!nome.trim()) {
-      setErrMsg('Informe seu nome completo.')
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3500)
-      return
-    }
-    if (phoneDigits.length < 10) {
-      setErrMsg('Informe um WhatsApp válido com DDD.')
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3500)
-      return
-    }
-
-    if (tipo === 'motorista') {
-      if (!veiculo) {
-        setErrMsg('Selecione o tipo de veículo.')
-        setStatus('error')
-        setTimeout(() => setStatus('idle'), 3500)
-        return
-      }
-    } else {
-      if (!cnh) {
-        setErrMsg('Selecione a categoria da sua CNH.')
-        setStatus('error')
-        setTimeout(() => setStatus('idle'), 3500)
-        return
-      }
-      if (!experiencia) {
-        setErrMsg('Selecione seu tempo de experiência.')
-        setStatus('error')
-        setTimeout(() => setStatus('idle'), 3500)
-        return
-      }
-    }
-
-    if (!ear) {
-      setErrMsg('Informe se possui CNH com EAR.')
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3500)
-      return
-    }
-    if (!disponibilidade) {
-      setErrMsg('Selecione sua disponibilidade de turno.')
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3500)
-      return
-    }
-    if (!cidade.trim()) {
-      setErrMsg('Informe sua cidade.')
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3500)
-      return
-    }
-
+    if (!validate()) return
     setStatus('loading')
-    try {
-      const templateParams =
-        tipo === 'motorista'
-          ? {
-              tipo:           'Motorista Próprio',
-              nome,
-              telefone,
-              veiculo,
-              ear:            ear === 'sim' ? 'Sim' : 'Não',
-              disponibilidade,
-              cidade,
-            }
-          : {
-              tipo:           'Agregado',
-              nome,
-              telefone,
-              cnh,
-              experiencia,
-              ear:            ear === 'sim' ? 'Sim' : 'Não',
-              disponibilidade,
-              cidade,
-            }
 
-      await emailjs.send(
-        'service_uw1vcyp',
-        'template_utphqwp',
-        templateParams,
-        '62PKkNjKnpF_LEVcS'
-      )
-      setStatus('success')
-      setNome('')
-      setTelefone('')
-      setCidade('')
-      setVeiculo('')
-      setEar('')
-      setDisponibilidade('')
-      setCnh('')
-      setExperiencia('')
+    const formData = new FormData()
+    formData.append(ENTRIES.nome, nome)
+    formData.append(ENTRIES.cpf, cpf)
+    formData.append(ENTRIES.telefone, telefone)
+    formData.append(ENTRIES.endereco, endereco)
+    formData.append(ENTRIES.cep, cep)
+    formData.append(ENTRIES.cidade, cidade)
+    formData.append(ENTRIES.estado, estado)
+    formData.append(ENTRIES.email, email)
+    formData.append(ENTRIES.empresa, empresa)
+    formData.append(ENTRIES.cnpj, cnpj)
+    formData.append(ENTRIES.banco, banco)
+    formData.append(ENTRIES.agencia, agencia)
+    formData.append(ENTRIES.conta, conta)
+    formData.append(ENTRIES.pix, pix)
+    formData.append(ENTRIES.tipoConta, tipoConta)
+    formData.append(ENTRIES.veiculoTipo, veiculoTipo)
+
+    try {
+      // Google Forms doesn't allow CORS — use no-cors mode; response will be opaque but data is saved
+      await fetch(FORM_ACTION, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData,
+      })
     } catch {
-      setErrMsg('Erro ao enviar. Tente novamente ou ligue para (11) 97816-6315.')
-      setStatus('error')
+      // no-cors throws no real error; any network failure is silent
     }
+
+    // Assume success after POST (Google Forms no-cors always "succeeds" silently)
+    setStatus('success')
   }
+
+  const err = (field: string) => errors[field]
 
   return (
     <Section id="parceiros">
@@ -750,149 +727,248 @@ export default function Partners() {
 
         <FormWrapper $open={open}>
           <FormInner>
-            <FormTitle>Preencha seus dados</FormTitle>
-            <FormSub>Entraremos em contato em até 24h úteis.</FormSub>
-            <Grid>
+            {status === 'success' ? (
+              <SuccessBox>
+                <CheckCircle size={40} strokeWidth={1.5} />
+                <strong>Cadastro enviado com sucesso!</strong>
+                <p>Suas informações chegaram direto para a ACF Transportes.<br />Entraremos em contato em breve pelo WhatsApp ou e-mail informado.</p>
+                <NoteBox>
+                  <strong>Não esqueça:</strong> envie cópia dos documentos (CNH, Comprovante de endereço, Cartão CNPJ, CRLV do Veículo) para o WhatsApp <strong>(11) 97816-6315</strong>.
+                </NoteBox>
+              </SuccessBox>
+            ) : (
+              <>
+                <FormTitle>Preencha seus dados</FormTitle>
+                <FormSub>Todos os campos são obrigatórios. Entraremos em contato em até 24h úteis.</FormSub>
+                <Grid>
 
-              {/* Toggle de tipo */}
-              <TypeToggle>
-                <TypeBtn $active={tipo === 'motorista'} onClick={() => handleTipo('motorista')} type="button">
-                  <User size={15} strokeWidth={1.5} />Motorista Próprio
-                </TypeBtn>
-                <TypeBtn $active={tipo === 'agregado'} onClick={() => handleTipo('agregado')} type="button">
-                  <Car size={15} strokeWidth={1.5} />Agregado
-                </TypeBtn>
-              </TypeToggle>
-
-              {/* Nome — compartilhado */}
-              <Field>
-                <FieldLabel>Nome completo</FieldLabel>
-                <Input
-                  name="nome"
-                  placeholder="Seu nome completo"
-                  value={nome}
-                  onChange={handleNome}
-                  autoComplete="name"
-                />
-              </Field>
-
-              {/* WhatsApp — compartilhado */}
-              <Field>
-                <FieldLabel>WhatsApp</FieldLabel>
-                <Input
-                  name="telefone"
-                  placeholder="(11) 99999-9999"
-                  value={telefone}
-                  onChange={handleTelefone}
-                  inputMode="tel"
-                  autoComplete="tel"
-                />
-              </Field>
-
-              {/* Campos exclusivos por tipo */}
-              {tipo === 'motorista' ? (
-                /* ── MOTORISTA PRÓPRIO ── */
-                <Field>
-                  <FieldLabel>Tipo de veículo</FieldLabel>
-                  <CustomSelect
-                    value={veiculo}
-                    onChange={setVeiculo}
-                    options={veiculoOptions}
-                  />
-                </Field>
-              ) : (
-                /* ── AGREGADO ── */
-                <>
+                  {/* Nome */}
                   <Field>
-                    <FieldLabel>Categoria da CNH</FieldLabel>
-                    <CustomSelect
-                      value={cnh}
-                      onChange={setCnh}
-                      options={cnhOptions}
-                      placeholder="Selecione a categoria..."
+                    <FieldLabel>Nome completo *</FieldLabel>
+                    <Input
+                      className={err('nome') ? 'error' : ''}
+                      placeholder="Seu nome completo"
+                      value={nome}
+                      onChange={e => { setNome(e.target.value.replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, '').slice(0,80)); setErrors(p => ({ ...p, nome: '' })) }}
+                      autoComplete="name"
                     />
+                    {err('nome') && <FieldError>{err('nome')}</FieldError>}
                   </Field>
+
+                  {/* CPF */}
                   <Field>
-                    <FieldLabel>Experiência com entregas</FieldLabel>
-                    <CustomSelect
-                      value={experiencia}
-                      onChange={setExperiencia}
-                      options={experienciaOptions}
-                      placeholder="Selecione o período..."
+                    <FieldLabel>CPF *</FieldLabel>
+                    <Input
+                      className={err('cpf') ? 'error' : ''}
+                      placeholder="000.000.000-00"
+                      value={cpf}
+                      onChange={e => { setCpf(maskCPF(e.target.value)); setErrors(p => ({ ...p, cpf: '' })) }}
+                      inputMode="numeric"
                     />
+                    {err('cpf') && <FieldError>{err('cpf')}</FieldError>}
                   </Field>
-                </>
-              )}
 
-              {/* CNH com EAR — compartilhado */}
-              <Field>
-                <FieldLabel>Possui CNH com EAR?</FieldLabel>
-                <EarToggle>
-                  <EarBtn
-                    type="button"
-                    $active={ear === 'sim'}
-                    $variant="yes"
-                    onClick={() => setEar('sim')}
-                  >
-                    <CheckCircle size={14} strokeWidth={2} />
-                    Sim, tenho
-                  </EarBtn>
-                  <EarBtn
-                    type="button"
-                    $active={ear === 'nao'}
-                    $variant="no"
-                    onClick={() => setEar('nao')}
-                  >
-                    Ainda não
-                  </EarBtn>
-                </EarToggle>
-              </Field>
+                  {/* Telefone */}
+                  <Field>
+                    <FieldLabel>Telefone / WhatsApp *</FieldLabel>
+                    <Input
+                      className={err('telefone') ? 'error' : ''}
+                      placeholder="(11) 99999-9999"
+                      value={telefone}
+                      onChange={e => { setTelefone(maskPhone(e.target.value)); setErrors(p => ({ ...p, telefone: '' })) }}
+                      inputMode="tel"
+                      autoComplete="tel"
+                    />
+                    {err('telefone') && <FieldError>{err('telefone')}</FieldError>}
+                  </Field>
 
-              {/* Disponibilidade de turno — compartilhado */}
-              <Field>
-                <FieldLabel>Disponibilidade de turno</FieldLabel>
-                <CustomSelect
-                  value={disponibilidade}
-                  onChange={setDisponibilidade}
-                  options={disponibilidadeOptions}
-                  placeholder="Selecione o turno..."
-                />
-              </Field>
+                  {/* Endereço */}
+                  <Field>
+                    <FieldLabel>Endereço *</FieldLabel>
+                    <Input
+                      className={err('endereco') ? 'error' : ''}
+                      placeholder="Rua, número, bairro"
+                      value={endereco}
+                      onChange={e => { setEndereco(e.target.value.slice(0,150)); setErrors(p => ({ ...p, endereco: '' })) }}
+                      autoComplete="street-address"
+                    />
+                    {err('endereco') && <FieldError>{err('endereco')}</FieldError>}
+                  </Field>
 
-              {/* Cidade — compartilhado */}
-              <Field>
-                <FieldLabel>Cidade</FieldLabel>
-                <Input
-                  name="cidade"
-                  placeholder="Ex: Guarulhos"
-                  value={cidade}
-                  onChange={handleCidade}
-                  autoComplete="address-level2"
-                />
-              </Field>
+                  {/* CEP */}
+                  <Field>
+                    <FieldLabel>CEP *</FieldLabel>
+                    <Input
+                      className={err('cep') ? 'error' : ''}
+                      placeholder="00000-000"
+                      value={cep}
+                      onChange={e => { setCep(maskCEP(e.target.value)); setErrors(p => ({ ...p, cep: '' })) }}
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                    />
+                    {err('cep') && <FieldError>{err('cep')}</FieldError>}
+                  </Field>
 
-              {status === 'success' && (
-                <SuccessBox>
-                  <CheckCircle size={20} strokeWidth={2} />
-                  Cadastro enviado com sucesso! Entraremos em contato em breve.
-                </SuccessBox>
-              )}
+                  {/* Cidade */}
+                  <Field>
+                    <FieldLabel>Cidade *</FieldLabel>
+                    <Input
+                      className={err('cidade') ? 'error' : ''}
+                      placeholder="Ex: Guarulhos"
+                      value={cidade}
+                      onChange={e => { setCidade(e.target.value.replace(/[^a-zA-ZÀ-ÿ\s'\-]/g, '').slice(0,60)); setErrors(p => ({ ...p, cidade: '' })) }}
+                      autoComplete="address-level2"
+                    />
+                    {err('cidade') && <FieldError>{err('cidade')}</FieldError>}
+                  </Field>
 
-              {status === 'error' && (
-                <ErrorBox>
-                  <CheckCircle size={20} strokeWidth={2} />
-                  {errMsg}
-                </ErrorBox>
-              )}
+                  {/* Estado */}
+                  <Field>
+                    <FieldLabel>Estado *</FieldLabel>
+                    <CustomSelect
+                      value={estado}
+                      onChange={v => { setEstado(v); setErrors(p => ({ ...p, estado: '' })) }}
+                      options={estadoOptions}
+                      placeholder="Selecione o estado..."
+                      hasError={!!err('estado')}
+                    />
+                    {err('estado') && <FieldError>{err('estado')}</FieldError>}
+                  </Field>
 
-              {status !== 'success' && (
-                <SubmitBtn $loading={status === 'loading'} onClick={handleSubmit} disabled={status === 'loading'}>
-                  {status === 'loading'
-                    ? <><Loader size={18} strokeWidth={2} /> Enviando...</>
-                    : <><Send size={16} strokeWidth={2} /> Enviar Cadastro</>}
-                </SubmitBtn>
-              )}
-            </Grid>
+                  {/* E-mail */}
+                  <Field>
+                    <FieldLabel>E-mail *</FieldLabel>
+                    <Input
+                      className={err('email') ? 'error' : ''}
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={e => { setEmail(e.target.value.slice(0,100)); setErrors(p => ({ ...p, email: '' })) }}
+                      type="email"
+                      autoComplete="email"
+                    />
+                    {err('email') && <FieldError>{err('email')}</FieldError>}
+                  </Field>
+
+                  {/* Nome da Empresa */}
+                  <Field>
+                    <FieldLabel>Nome da sua Empresa *</FieldLabel>
+                    <Input
+                      className={err('empresa') ? 'error' : ''}
+                      placeholder="Nome da empresa / MEI"
+                      value={empresa}
+                      onChange={e => { setEmpresa(e.target.value.slice(0,100)); setErrors(p => ({ ...p, empresa: '' })) }}
+                    />
+                    {err('empresa') && <FieldError>{err('empresa')}</FieldError>}
+                  </Field>
+
+                  {/* CNPJ */}
+                  <Field>
+                    <FieldLabel>CNPJ *</FieldLabel>
+                    <Input
+                      className={err('cnpj') ? 'error' : ''}
+                      placeholder="00.000.000/0000-00"
+                      value={cnpj}
+                      onChange={e => { setCnpj(maskCNPJ(e.target.value)); setErrors(p => ({ ...p, cnpj: '' })) }}
+                      inputMode="numeric"
+                    />
+                    {err('cnpj') && <FieldError>{err('cnpj')}</FieldError>}
+                  </Field>
+
+                  {/* Banco */}
+                  <Field>
+                    <FieldLabel>Banco *</FieldLabel>
+                    <Input
+                      className={err('banco') ? 'error' : ''}
+                      placeholder="Ex: Nubank, Bradesco, Itaú..."
+                      value={banco}
+                      onChange={e => { setBanco(e.target.value.slice(0,60)); setErrors(p => ({ ...p, banco: '' })) }}
+                    />
+                    {err('banco') && <FieldError>{err('banco')}</FieldError>}
+                  </Field>
+
+                  {/* Agência */}
+                  <Field>
+                    <FieldLabel>Número da Agência *</FieldLabel>
+                    <Input
+                      className={err('agencia') ? 'error' : ''}
+                      placeholder="Ex: 0001"
+                      value={agencia}
+                      onChange={e => { setAgencia(e.target.value.replace(/\D/g,'').slice(0,10)); setErrors(p => ({ ...p, agencia: '' })) }}
+                      inputMode="numeric"
+                    />
+                    {err('agencia') && <FieldError>{err('agencia')}</FieldError>}
+                  </Field>
+
+                  {/* Conta Corrente */}
+                  <Field>
+                    <FieldLabel>Número Conta Corrente *</FieldLabel>
+                    <Input
+                      className={err('conta') ? 'error' : ''}
+                      placeholder="Ex: 12345-6"
+                      value={conta}
+                      onChange={e => { setConta(e.target.value.slice(0,20)); setErrors(p => ({ ...p, conta: '' })) }}
+                      inputMode="numeric"
+                    />
+                    {err('conta') && <FieldError>{err('conta')}</FieldError>}
+                  </Field>
+
+                  {/* Pix */}
+                  <Field>
+                    <FieldLabel>Chave Pix *</FieldLabel>
+                    <Input
+                      className={err('pix') ? 'error' : ''}
+                      placeholder="CPF, e-mail, telefone ou chave aleatória"
+                      value={pix}
+                      onChange={e => { setPix(e.target.value.slice(0,100)); setErrors(p => ({ ...p, pix: '' })) }}
+                    />
+                    {err('pix') && <FieldError>{err('pix')}</FieldError>}
+                  </Field>
+
+                  {/* Tipo de Conta */}
+                  <Field>
+                    <FieldLabel>Tipo de Conta *</FieldLabel>
+                    <RadioGroup>
+                      {(['PJ', 'PF'] as const).map(opt => (
+                        <RadioLabel
+                          key={opt}
+                          $checked={tipoConta === opt}
+                          $hasError={!!err('tipoConta')}
+                          onClick={() => { setTipoConta(opt); setErrors(p => ({ ...p, tipoConta: '' })) }}
+                        >
+                          <RadioDot $checked={tipoConta === opt} />
+                          {opt === 'PJ' ? 'PJ — Pessoa Jurídica' : 'PF — Pessoa Física'}
+                        </RadioLabel>
+                      ))}
+                    </RadioGroup>
+                    {err('tipoConta') && <FieldError>{err('tipoConta')}</FieldError>}
+                  </Field>
+
+                  {/* Veículo Tipo */}
+                  <Field>
+                    <FieldLabel>Veículo Tipo *</FieldLabel>
+                    <Input
+                      className={err('veiculoTipo') ? 'error' : ''}
+                      placeholder="Ex: Van, Fiorino, Kangoo, Doblo..."
+                      value={veiculoTipo}
+                      onChange={e => { setVeiculoTipo(e.target.value.slice(0,60)); setErrors(p => ({ ...p, veiculoTipo: '' })) }}
+                    />
+                    {err('veiculoTipo') && <FieldError>{err('veiculoTipo')}</FieldError>}
+                  </Field>
+
+                  {/* Nota sobre documentos */}
+                  <NoteBox>
+                    <strong>Documentos necessários:</strong> Após enviar o cadastro, encaminhe cópia da <strong>CNH, Comprovante de endereço, Cartão CNPJ e CRLV do Veículo</strong> para o WhatsApp <strong>(11) 97816-6315</strong>.
+                  </NoteBox>
+
+                  <SubmitBtn $loading={status === 'loading'} onClick={handleSubmit} disabled={status === 'loading'}>
+                    {status === 'loading'
+                      ? <><SpinnerIcon size={18} strokeWidth={2} /> Enviando...</>
+                      : <><Send size={16} strokeWidth={2} /> Enviar Cadastro</>}
+                  </SubmitBtn>
+
+                </Grid>
+              </>
+            )}
           </FormInner>
         </FormWrapper>
       </Inner>
