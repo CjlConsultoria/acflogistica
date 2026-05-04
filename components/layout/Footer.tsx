@@ -125,7 +125,7 @@ export default function Footer() {
         <Col $visible={visible} $delay={0.3}>
           <ColTitle>Contato</ColTitle>
           <ContactItem><span>WhatsApp</span><a href="https://wa.me/5511978166315" target="_blank">(11) 97816-6315</a></ContactItem>
-          <ContactItem><span>E-mail</span><a href="mailto:contato@acftransportes.com.br">contato@acftransportes.com.br</a></ContactItem>
+          <ContactItem><span>E-mail</span><a href="mailto:acfgestao@gmail.com">acfgestao@gmail.com</a></ContactItem>
           <ContactItem><span>Horário</span><a href="#">Seg–Sex: 7h às 19h</a></ContactItem>
         </Col>
       </Grid>
@@ -134,7 +134,7 @@ export default function Footer() {
         <Social>
           <a href="https://instagram.com/acflogisticaetransporte" target="_blank" aria-label="Instagram"><IgIcon /></a>
           <a href="https://wa.me/5511978166315" target="_blank" aria-label="WhatsApp"><MessageCircle size={16} strokeWidth={1.5} /></a>
-          <a href="mailto:contato@acftransportes.com.br" aria-label="Email"><Mail size={16} strokeWidth={1.5} /></a>
+          <a href="mailto:acfgestao@gmail.com" aria-label="Email"><Mail size={16} strokeWidth={1.5} /></a>
         </Social>
       </Divider>
     </Foot>

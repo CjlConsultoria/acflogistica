@@ -67,7 +67,7 @@ export default function CTA() {
         <Button href="https://wa.me/5511978166315" target="_blank" $variant="primary" $size="lg">
           <BtnInner><MessageCircle size={18} strokeWidth={1.5} /> Falar no WhatsApp</BtnInner>
         </Button>
-        <Button href="mailto:contato@acftransportes.com.br" $variant="secondary" $size="lg">
+        <Button href="mailto:acfgestao@gmail.com" $variant="secondary" $size="lg">
           <BtnInner><Mail size={18} strokeWidth={1.5} /> Enviar E-mail</BtnInner>
         </Button>
       </Actions>
