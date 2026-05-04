@@ -1,11 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export',
   compiler: {
     styledComponents: true,
   },
   images: {
-    domains: ['upload.wikimedia.org'],
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+    ],
   },
 };
 
