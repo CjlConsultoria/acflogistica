@@ -31,6 +31,9 @@ const interItalic = localFont({
 export const metadata: Metadata = {
   title: 'ACF Logística e Transportes | Guarulhos, SP',
   description: 'Soluções ágeis e seguras em logística para empresas e marketplaces. Coleta, transporte e distribuição com eficiência.',
+  icons: {
+    icon: '/logo1.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
