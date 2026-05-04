@@ -1,6 +1,6 @@
 'use client'
 import styled, { css, keyframes } from 'styled-components'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Phone, X, Menu } from 'lucide-react'
 
@@ -142,17 +142,40 @@ const MobileWhatsApp = styled.a`
   &:hover { background: #f5a832; }
 `
 
-const NavLink = styled.a`
+/* NavLink com sublinhado laranja ativo */
+const NavLink = styled.a<{ $active: boolean }>`
   font-family: var(--font-cabourg-bold), sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #4A5568;
+  color: ${({ $active }) => $active ? '#EE961A' : '#4A5568'};
   padding: 0.4rem 0.8rem;
   border-radius: 5px;
   transition: all 0.2s;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+
   &:hover { color: #EE961A; background: rgba(238,150,26,0.07); }
+
+  /* linha laranja abaixo do link — 30% da largura do texto */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.8rem; /* mesmo valor do padding-left do NavLink */
+    width: ${({ $active }) => $active ? '30%' : '0%'};
+    height: 2px;
+    background: #EE961A;
+    border-radius: 2px;
+    transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &:hover::after {
+    width: 30%;
+  }
 `
 
 const WhatsAppBtn = styled.a`
@@ -209,7 +232,7 @@ const CloseBtn = styled.button`
 `
 
 const navItems = [
-  { href: '#about',      label: 'Sobre Nós' },
+  { href: '#about',         label: 'Sobre Nós' },
   { href: '#servicos',      label: 'Serviços' },
   { href: '#como-funciona', label: 'Como Funciona' },
   { href: '#numeros',       label: 'Números' },
@@ -218,8 +241,9 @@ const navItems = [
 ]
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false)
-  const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled]     = useState(false)
+  const [open, setOpen]             = useState(false)
+  const [activeHref, setActiveHref] = useState('')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -232,7 +256,35 @@ export default function Header() {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
+  /* Detecta a seção visível e marca como ativa */
+  useEffect(() => {
+    const ids = navItems.map(item => item.href.replace('#', ''))
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveHref('#' + entry.target.id)
+          }
+        })
+      },
+      { rootMargin: '-40% 0px -55% 0px', threshold: 0 }
+    )
+
+    ids.forEach(id => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
   const close = () => setOpen(false)
+
+  const handleNavClick = (href: string) => {
+    setActiveHref(href)
+    close()
+  }
 
   return (
     <>
@@ -250,7 +302,13 @@ export default function Header() {
         <DesktopLinks>
           {navItems.map(item => (
             <li key={item.href}>
-              <NavLink href={item.href}>{item.label}</NavLink>
+              <NavLink
+                href={item.href}
+                $active={activeHref === item.href}
+                onClick={() => handleNavClick(item.href)}
+              >
+                {item.label}
+              </NavLink>
             </li>
           ))}
         </DesktopLinks>
@@ -283,7 +341,7 @@ export default function Header() {
         <MobileNavList>
           {navItems.map((item, i) => (
             <MobileNavItem key={item.href} $delay={i * 0.055}>
-              <MobileNavLink href={item.href} onClick={close}>
+              <MobileNavLink href={item.href} onClick={() => handleNavClick(item.href)}>
                 {item.label}
               </MobileNavLink>
             </MobileNavItem>
