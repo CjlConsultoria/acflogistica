@@ -2,7 +2,7 @@
 import styled, { keyframes, css } from 'styled-components'
 import { useState, useRef, useEffect } from 'react'
 import emailjs from '@emailjs/browser'
-import { ChevronDown, Truck, User, Phone, Car, CheckCircle, Send, Loader } from 'lucide-react'
+import { ChevronDown, Truck, User, Phone, Car, CheckCircle, Send, Loader, FileText, Briefcase } from 'lucide-react'
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -375,8 +375,16 @@ const DropdownItem = styled.li<{ $active: boolean }>`
 `
 
 const veiculoOptions = ['Van', 'Fiorino', 'Kangoo', 'Doblo', 'Carro de passeio (2011+)', 'Outro utilitário']
+const cnhOptions = ['CNH B', 'CNH C', 'CNH D', 'CNH E', 'CNH AB', 'CNH AC', 'CNH AD', 'CNH AE']
+const experienciaOptions = ['Menos de 6 meses', '6 meses a 1 ano', '1 a 2 anos', '2 a 5 anos', 'Mais de 5 anos']
+const disponibilidadeOptions = ['Manhã (06h–12h)', 'Tarde (12h–18h)', 'Noite (18h–00h)', 'Integral (06h–18h)']
 
-function CustomSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function CustomSelect({ value, onChange, options, placeholder }: {
+  value: string
+  onChange: (v: string) => void
+  options: string[]
+  placeholder?: string
+}) {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -391,11 +399,11 @@ function CustomSelect({ value, onChange }: { value: string; onChange: (v: string
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
       <SelectTrigger type="button" $isOpen={isOpen} onClick={() => setIsOpen(!isOpen)}>
-        <SelectPlaceholder $hasValue={!!value}>{value || 'Selecione...'}</SelectPlaceholder>
+        <SelectPlaceholder $hasValue={!!value}>{value || (placeholder ?? 'Selecione...')}</SelectPlaceholder>
         <ChevronDown size={14} strokeWidth={2.5} />
       </SelectTrigger>
       <DropdownList $isOpen={isOpen}>
-        {veiculoOptions.map((opt) => (
+        {options.map((opt) => (
           <DropdownItem
             key={opt}
             $active={value === opt}
@@ -436,6 +444,48 @@ const TypeBtn = styled.button<{ $active: boolean }>`
   gap: 0.5rem;
   min-width: 0;
   &:hover { border-color: #1E549E; color: #1E549E; background: rgba(30,84,158,0.08); }
+`
+
+const EarToggle = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  width: 100%;
+  box-sizing: border-box;
+`
+
+const EarBtn = styled.button<{ $active: boolean; $variant?: 'yes' | 'no' }>`
+  padding: 0.7rem;
+  border-radius: 999px;
+  border: 1.5px solid ${({ $active, $variant }) =>
+    $active
+      ? $variant === 'no' ? 'rgba(239,68,68,0.6)' : '#1E549E'
+      : 'rgba(30,84,158,0.2)'};
+  background: ${({ $active, $variant }) =>
+    $active
+      ? $variant === 'no' ? 'rgba(239,68,68,0.08)' : 'rgba(30,84,158,0.12)'
+      : 'rgba(30,84,158,0.03)'};
+  color: ${({ $active, $variant }) =>
+    $active
+      ? $variant === 'no' ? '#dc2626' : '#1E549E'
+      : '#9CA3AF'};
+  font-family: var(--font-cabourg-bold), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 0;
+  &:hover {
+    border-color: ${({ $variant }) => $variant === 'no' ? 'rgba(239,68,68,0.6)' : '#1E549E'};
+    color: ${({ $variant }) => $variant === 'no' ? '#dc2626' : '#1E549E'};
+    background: ${({ $variant }) => $variant === 'no' ? 'rgba(239,68,68,0.08)' : 'rgba(30,84,158,0.08)'};
+  }
 `
 
 const SubmitBtn = styled.button<{ $loading?: boolean }>`
@@ -513,22 +563,46 @@ function sanitizeCity(raw: string): string {
 export default function Partners() {
   const [open, setOpen]     = useState(false)
   const [tipo, setTipo]     = useState<'motorista' | 'agregado'>('motorista')
-  const [form, setForm]     = useState({ nome: '', telefone: '', veiculo: '', cidade: '' })
+
+  // Campos compartilhados
+  const [nome, setNome]                 = useState('')
+  const [telefone, setTelefone]         = useState('')
+  const [cidade, setCidade]             = useState('Guarulhos')
+  const [ear, setEar]                   = useState<'sim' | 'nao' | ''>('sim')
+  const [disponibilidade, setDisponibilidade] = useState('Integral (06h–18h)')
+
+  // Campos exclusivos — Motorista Próprio
+  const [veiculo, setVeiculo]           = useState('')
+
+  // Campos exclusivos — Agregado
+  const [cnh, setCnh]                   = useState('')
+  const [experiencia, setExperiencia]   = useState('1 a 2 anos')
+
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errMsg, setErrMsg] = useState('')
 
+  // Limpa campos exclusivos ao trocar de tipo (mantém os campos compartilhados)
+  const handleTipo = (novoTipo: 'motorista' | 'agregado') => {
+    setTipo(novoTipo)
+    setVeiculo('')
+    setCnh('')
+    setExperiencia('1 a 2 anos')
+    setStatus('idle')
+  }
+
   const handleNome = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, nome: sanitizeName(e.target.value) }))
+    setNome(sanitizeName(e.target.value))
 
   const handleTelefone = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, telefone: maskPhone(e.target.value) }))
+    setTelefone(maskPhone(e.target.value))
 
   const handleCidade = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, cidade: sanitizeCity(e.target.value) }))
+    setCidade(sanitizeCity(e.target.value))
 
   const handleSubmit = async () => {
-    const phoneDigits = form.telefone.replace(/\D/g, '')
-    if (!form.nome.trim()) {
+    const phoneDigits = telefone.replace(/\D/g, '')
+
+    if (!nome.trim()) {
       setErrMsg('Informe seu nome completo.')
       setStatus('error')
       setTimeout(() => setStatus('idle'), 3500)
@@ -540,34 +614,87 @@ export default function Partners() {
       setTimeout(() => setStatus('idle'), 3500)
       return
     }
-    if (!form.veiculo) {
-      setErrMsg('Selecione o tipo de veículo.')
+
+    if (tipo === 'motorista') {
+      if (!veiculo) {
+        setErrMsg('Selecione o tipo de veículo.')
+        setStatus('error')
+        setTimeout(() => setStatus('idle'), 3500)
+        return
+      }
+    } else {
+      if (!cnh) {
+        setErrMsg('Selecione a categoria da sua CNH.')
+        setStatus('error')
+        setTimeout(() => setStatus('idle'), 3500)
+        return
+      }
+      if (!experiencia) {
+        setErrMsg('Selecione seu tempo de experiência.')
+        setStatus('error')
+        setTimeout(() => setStatus('idle'), 3500)
+        return
+      }
+    }
+
+    if (!ear) {
+      setErrMsg('Informe se possui CNH com EAR.')
       setStatus('error')
       setTimeout(() => setStatus('idle'), 3500)
       return
     }
-    if (!form.cidade.trim()) {
+    if (!disponibilidade) {
+      setErrMsg('Selecione sua disponibilidade de turno.')
+      setStatus('error')
+      setTimeout(() => setStatus('idle'), 3500)
+      return
+    }
+    if (!cidade.trim()) {
       setErrMsg('Informe sua cidade.')
       setStatus('error')
       setTimeout(() => setStatus('idle'), 3500)
       return
     }
+
     setStatus('loading')
     try {
+      const templateParams =
+        tipo === 'motorista'
+          ? {
+              tipo:           'Motorista Próprio',
+              nome,
+              telefone,
+              veiculo,
+              ear:            ear === 'sim' ? 'Sim' : 'Não',
+              disponibilidade,
+              cidade,
+            }
+          : {
+              tipo:           'Agregado',
+              nome,
+              telefone,
+              cnh,
+              experiencia,
+              ear:            ear === 'sim' ? 'Sim' : 'Não',
+              disponibilidade,
+              cidade,
+            }
+
       await emailjs.send(
         'service_uw1vcyp',
         'template_utphqwp',
-        {
-          tipo:     tipo === 'motorista' ? 'Motorista Próprio' : 'Agregado',
-          nome:     form.nome,
-          telefone: form.telefone,
-          veiculo:  form.veiculo,
-          cidade:   form.cidade,
-        },
+        templateParams,
         '62PKkNjKnpF_LEVcS'
       )
       setStatus('success')
-      setForm({ nome: '', telefone: '', veiculo: '', cidade: '' })
+      setNome('')
+      setTelefone('')
+      setCidade('')
+      setVeiculo('')
+      setEar('')
+      setDisponibilidade('')
+      setCnh('')
+      setExperiencia('')
     } catch {
       setErrMsg('Erro ao enviar. Tente novamente ou ligue para (11) 97816-6315.')
       setStatus('error')
@@ -626,52 +753,119 @@ export default function Partners() {
             <FormTitle>Preencha seus dados</FormTitle>
             <FormSub>Entraremos em contato em até 24h úteis.</FormSub>
             <Grid>
+
+              {/* Toggle de tipo */}
               <TypeToggle>
-                <TypeBtn $active={tipo === 'motorista'} onClick={() => setTipo('motorista')} type="button">
+                <TypeBtn $active={tipo === 'motorista'} onClick={() => handleTipo('motorista')} type="button">
                   <User size={15} strokeWidth={1.5} />Motorista Próprio
                 </TypeBtn>
-                <TypeBtn $active={tipo === 'agregado'} onClick={() => setTipo('agregado')} type="button">
+                <TypeBtn $active={tipo === 'agregado'} onClick={() => handleTipo('agregado')} type="button">
                   <Car size={15} strokeWidth={1.5} />Agregado
                 </TypeBtn>
               </TypeToggle>
 
+              {/* Nome — compartilhado */}
               <Field>
                 <FieldLabel>Nome completo</FieldLabel>
                 <Input
                   name="nome"
                   placeholder="Seu nome completo"
-                  value={form.nome}
+                  value={nome}
                   onChange={handleNome}
                   autoComplete="name"
                 />
               </Field>
 
+              {/* WhatsApp — compartilhado */}
               <Field>
                 <FieldLabel>WhatsApp</FieldLabel>
                 <Input
                   name="telefone"
                   placeholder="(11) 99999-9999"
-                  value={form.telefone}
+                  value={telefone}
                   onChange={handleTelefone}
                   inputMode="tel"
                   autoComplete="tel"
                 />
               </Field>
 
+              {/* Campos exclusivos por tipo */}
+              {tipo === 'motorista' ? (
+                /* ── MOTORISTA PRÓPRIO ── */
+                <Field>
+                  <FieldLabel>Tipo de veículo</FieldLabel>
+                  <CustomSelect
+                    value={veiculo}
+                    onChange={setVeiculo}
+                    options={veiculoOptions}
+                  />
+                </Field>
+              ) : (
+                /* ── AGREGADO ── */
+                <>
+                  <Field>
+                    <FieldLabel>Categoria da CNH</FieldLabel>
+                    <CustomSelect
+                      value={cnh}
+                      onChange={setCnh}
+                      options={cnhOptions}
+                      placeholder="Selecione a categoria..."
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Experiência com entregas</FieldLabel>
+                    <CustomSelect
+                      value={experiencia}
+                      onChange={setExperiencia}
+                      options={experienciaOptions}
+                      placeholder="Selecione o período..."
+                    />
+                  </Field>
+                </>
+              )}
+
+              {/* CNH com EAR — compartilhado */}
               <Field>
-                <FieldLabel>Tipo de veículo</FieldLabel>
+                <FieldLabel>Possui CNH com EAR?</FieldLabel>
+                <EarToggle>
+                  <EarBtn
+                    type="button"
+                    $active={ear === 'sim'}
+                    $variant="yes"
+                    onClick={() => setEar('sim')}
+                  >
+                    <CheckCircle size={14} strokeWidth={2} />
+                    Sim, tenho
+                  </EarBtn>
+                  <EarBtn
+                    type="button"
+                    $active={ear === 'nao'}
+                    $variant="no"
+                    onClick={() => setEar('nao')}
+                  >
+                    Ainda não
+                  </EarBtn>
+                </EarToggle>
+              </Field>
+
+              {/* Disponibilidade de turno — compartilhado */}
+              <Field>
+                <FieldLabel>Disponibilidade de turno</FieldLabel>
                 <CustomSelect
-                  value={form.veiculo}
-                  onChange={(v) => setForm(f => ({ ...f, veiculo: v }))}
+                  value={disponibilidade}
+                  onChange={setDisponibilidade}
+                  options={disponibilidadeOptions}
+                  placeholder="Selecione o turno..."
                 />
               </Field>
 
+              {/* Cidade — compartilhado */}
               <Field>
                 <FieldLabel>Cidade</FieldLabel>
                 <Input
                   name="cidade"
                   placeholder="Ex: Guarulhos"
-                  value={form.cidade}
+                  value={cidade}
                   onChange={handleCidade}
                   autoComplete="address-level2"
                 />
