@@ -1,8 +1,8 @@
 'use client'
+import { useRef, useState, useEffect } from 'react'
 import styled, { keyframes, css } from 'styled-components'
 import Image from 'next/image'
 import { MessageCircle, Mail, MapPin } from 'lucide-react'
-import { useScrollReveal } from '@/hooks/useScrollReveal'
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(28px); }
@@ -90,11 +90,28 @@ const IgIcon = () => (
 )
 
 export default function Footer() {
-  const { ref, visible } = useScrollReveal({ threshold: 0.1 })
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = gridRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   return (
     <Foot id="contato">
-      <Grid ref={ref as React.RefObject<HTMLDivElement>}>
+      <Grid ref={gridRef}>
         <Col $visible={visible} $delay={0}>
           <Image src="/logo.png" alt="ACF Logística e Transportes" width={160} height={68} style={{ objectFit: 'contain', height: 'auto' }} />
           <Desc>Soluções ágeis e seguras em logística para empresas e marketplaces. Coleta, transporte e distribuição com eficiência.</Desc>
@@ -103,6 +120,7 @@ export default function Footer() {
             <span>Av. Sete de Setembro, 1465<br />Vila Galvão · Guarulhos · SP · 07064-002</span>
           </Address>
         </Col>
+
         <Col $visible={visible} $delay={0.1}>
           <ColTitle>Serviços</ColTitle>
           <ColList>
@@ -113,22 +131,35 @@ export default function Footer() {
             <li><ColLink href="#servicos">Carga Fracionada</ColLink></li>
           </ColList>
         </Col>
+
         <Col $visible={visible} $delay={0.2}>
-          <ColTitle>Empresa</ColTitle>
+          <ColTitle>Navegação</ColTitle>
           <ColList>
-            <li><ColLink href="#">Sobre Nós</ColLink></li>
-            <li><ColLink href="#">Trabalhe Conosco</ColLink></li>
-            <li><ColLink href="#">Seja um Parceiro</ColLink></li>
-            <li><ColLink href="#">Blog</ColLink></li>
+            <li><ColLink href="#servicos">Serviços</ColLink></li>
+            <li><ColLink href="#about">Sobre Nós</ColLink></li>
+            <li><ColLink href="#parceiros">Seja Parceiro</ColLink></li>
+            <li><ColLink href="#como-funciona">Como Funciona</ColLink></li>
+            <li><ColLink href="#numeros">Números</ColLink></li>
           </ColList>
         </Col>
+
         <Col $visible={visible} $delay={0.3}>
           <ColTitle>Contato</ColTitle>
-          <ContactItem><span>WhatsApp</span><a href="https://wa.me/5511978166315" target="_blank">(11) 97816-6315</a></ContactItem>
-          <ContactItem><span>E-mail</span><a href="mailto:acfgestao@gmail.com">acfgestao@gmail.com</a></ContactItem>
-          <ContactItem><span>Horário</span><a href="#">Seg–Sex: 7h às 19h</a></ContactItem>
+          <ContactItem>
+            <span>WhatsApp</span>
+            <a href="https://wa.me/5511978166315" target="_blank">(11) 97816-6315</a>
+          </ContactItem>
+          <ContactItem>
+            <span>E-mail</span>
+            <a href="mailto:acfgestao@gmail.com">acfgestao@gmail.com</a>
+          </ContactItem>
+          <ContactItem>
+            <span>Horário</span>
+            <a href="#">Seg–Sex: 7h às 19h</a>
+          </ContactItem>
         </Col>
       </Grid>
+
       <Divider>
         <Copy>© {new Date().getFullYear()} ACF Logística e Transportes. Todos os direitos reservados.</Copy>
         <Social>
