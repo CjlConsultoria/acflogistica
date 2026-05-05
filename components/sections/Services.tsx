@@ -319,7 +319,6 @@ const MileHoverWrap = styled.div`
   &:hover ${MileCardInner} {
     border-top-color: #ee961a;
     box-shadow: 0 12px 36px rgba(238, 150, 26, 0.18);
-    transform: translateY(-6px);
   }
   &:hover ${MileTitle} { color: #ee961a; }
   &:hover ${MileTag} {
