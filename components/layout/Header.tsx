@@ -158,7 +158,7 @@ const NavLink = styled.a<{ $active: boolean }>`
   flex-direction: column;
   align-items: center;
 
-  &:hover { color: #EE961A; background: rgba(238,150,26,0.07); }
+  &:hover { color: #EE961A; background: rgba(255, 255, 255, 0); }
 
   /* linha laranja abaixo do link — 30% da largura do texto */
   &::after {
@@ -232,11 +232,11 @@ const CloseBtn = styled.button`
 `
 
 const navItems = [
-  { href: '#about',         label: 'Sobre Nós' },
   { href: '#servicos',      label: 'Serviços' },
+  { href: '#about',         label: 'Sobre Nós' },
+  { href: '#parceiros',     label: 'Seja Parceiro' },
   { href: '#como-funciona', label: 'Como Funciona' },
   { href: '#numeros',       label: 'Números' },
-  { href: '#parceiros',     label: 'Seja Parceiro' },
   { href: '#contato',       label: 'Contato' },
 ]
 

@@ -622,7 +622,7 @@ const diferenciais = [
 
 const requisitos = [
   { icon: <FileText size={13} strokeWidth={2} />, label: 'CNH categoria B com EAR' },
-  { icon: <Truck size={13} strokeWidth={2} />, label: 'Veículo próprio (van, utilitário ou passeio)' },
+  { icon: <Truck size={13} strokeWidth={2} />, label: 'Veículos (van, utilitário ou passeio)' },
   { icon: <CheckCircle size={13} strokeWidth={2} />, label: 'MEI ativo ou disponível para abrir' },
   { icon: <Star size={13} strokeWidth={2} />, label: 'Comprometimento com prazo e qualidade' },
 ]
