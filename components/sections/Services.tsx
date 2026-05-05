@@ -453,7 +453,7 @@ export default function Services() {
               <span style={{ color: '#EE961A' }}>DA SUA CARGA</span>
             </MileHeading>
             <MileSubtitle>
-              Na Nunes Logística, cobrimos cada etapa do transporte — da coleta na origem até
+              Na AFC Logística, cobrimos cada etapa do transporte — da coleta na origem até
               a entrega no destino final. Trabalhamos com diferentes tipos de veículos para
               garantir agilidade, segurança e conformidade com as restrições de cada região,
               atendendo setores como saúde, e-commerce, indústrias e muito mais.
