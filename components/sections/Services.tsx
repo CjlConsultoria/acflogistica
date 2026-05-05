@@ -197,10 +197,12 @@ const MileGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
+  align-items: stretch;   // ← adicione
   @media (max-width: 900px) { grid-template-columns: 1fr; gap: 2rem; }
 `
 
 const MileAnimCard = styled.div<{ $visible: boolean; $delay: number }>`
+  height: 100%;   // ← adicione
   opacity: 0;
   ${({ $visible, $delay }) =>
     $visible &&
@@ -215,6 +217,7 @@ const MileCardWrap = styled.div`
   align-items: center;
   text-align: center;
   padding: 0 1.5rem 2.5rem;
+  height: 100%;             // ← adicione
   @media (max-width: 900px) { padding: 0; }
 `
 
@@ -267,12 +270,12 @@ const MileCardInner = styled.div`
   border-radius: 0 1.5rem 0 1.5rem;
   padding: 1.75rem 1.5rem;
   width: 100%;
+  flex: 1;   // ← adicione (substitui width: 100% sozinho)
   box-shadow: 0 2px 16px rgba(30, 84, 158, 0.07);
   border-top: 3px solid #1E549E;
   transition:
     border-color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow 0.3s ease;
 `
 
 const MileTag = styled.span`
@@ -311,6 +314,7 @@ const MileHoverWrap = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
+  height: 100%;   // ← adicione
 
   &:hover ${MileBadge} {
     background: #1E549E;
