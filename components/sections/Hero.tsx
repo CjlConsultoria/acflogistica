@@ -90,9 +90,28 @@ const Subtitle = styled.p`
 `
 
 const Actions = styled.div`
-  display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
-  @media (max-width: 768px) { justify-content: center; }
-  @media (max-width: 480px) { flex-direction: column; width: 100%; a { width: 100%; justify-content: center; } }
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  align-items: center;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    a, button {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      justify-content: center;
+      white-space: normal;
+      text-align: center;
+    }
+  }
 `
 
 const TrustRow = styled.div`
@@ -163,7 +182,7 @@ export default function Hero() {
           </Subtitle>
           <Actions>
             <Button href="https://wa.me/5511978166315" target="_blank" $variant="primary" $size="lg">Falar no WhatsApp</Button>
-            <Button href="#servicos" $variant="outline" $size="lg">Ver Serviços</Button>
+            <Button href="#parceiros" $variant="outline" $size="lg">Seja nosso parceiro</Button>
           </Actions>
           <TrustRow>
             <TrustItem $delay={0.9}><strong>500+</strong><span>Clientes ativos</span></TrustItem>
